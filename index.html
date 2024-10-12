@@ -6,146 +6,48 @@
     <title>Чат</title>
     <style>
         body { font-family: Arial, sans-serif; }
-        #users { margin-bottom: 20px; }
+        #messages { margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1>Мой гениальный код</h1>
-    <div id="users">
-        <h2>Подключённые пользователи:</h2>
-        <ul id="userList"></ul>
-    </div>
+    <h1>Простой чат с использованием LocalStorage</h1>
+    <input id="username" type="text" placeholder="Ваше имя" />
     <input id="message" type="text" placeholder="Введите сообщение" />
     <button id="send">Отправить</button>
     <ul id="messages"></ul>
 
     <script>
-        // Подключение к WebSocket-серверу
-        const ws = new WebSocket('ws://localhost:8080');
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'message') {
-                const messagesList = document.getElementById('messages');
+        // Функция для отображения сообщений
+        function displayMessages() {
+            const messagesList = document.getElementById('messages');
+            messagesList.innerHTML = ''; // Очищаем список
+            const messages = JSON.parse(localStorage.getItem('messages')) || [];
+            messages.forEach(msg => {
                 const li = document.createElement('li');
-                li.textContent = data.message;
+                li.textContent = `${msg.username}: ${msg.message}`;
                 messagesList.appendChild(li);
-            } else if (data.type === 'users') {
-                const userList = document.getElementById('userList');
-                userList.innerHTML = ''; // Очищаем список
-                data.users.forEach(user => {
-                    const li = document.createElement('li');
-                    li.textContent = user;
-                    userList.appendChild(li);
-                });
-            }
-        };
+            });
+        }
 
         document.getElementById('send').onclick = () => {
+            const username = document.getElementById('username').value || 'Гость';
             const messageInput = document.getElementById('message');
             const message = messageInput.value;
-            ws.send(JSON.stringify({ type: 'message', message }));
+
+            // Получаем существующие сообщения из LocalStorage
+            const messages = JSON.parse(localStorage.getItem('messages')) || [];
+            messages.push({ username, message });
+
+            // Сохраняем обновленный список сообщений в LocalStorage
+            localStorage.setItem('messages', JSON.stringify(messages));
             messageInput.value = '';
+
+            // Обновляем отображение сообщений
+            displayMessages();
         };
-    </script>
 
-    <script>
-        // Серверный код (не будет работать в браузере)
-        // Запустите этот код отдельно в Node.js в файле server.js
-
-        /*
-        const WebSocket = require('ws');
-        const http = require('http');
-        const fs = require('fs');
-        const path = require('path');
-
-        const server = http.createServer((req, res) => {
-            if (req.url === '/') {
-                fs.readFile(path.join(__dirname, 'index.html'), (err, data) => {
-                    if (err) {
-                        res.writeHead(500);
-                        return res.end('Ошибка загрузки файла');
-                    }
-                    res.writeHead(200, { 'Content-Type': 'text/html' });
-                    res.end(data);
-                });
-            } else {
-                const filePath = path.join(__dirname, req.url);
-                const extname = path.extname(filePath);
-                let contentType = 'text/html';
-                
-                switch (extname) {
-                    case '.js':
-                        contentType = 'text/javascript';
-                        break;
-                    case '.css':
-                        contentType = 'text/css';
-                        break;
-                }
-
-                fs.readFile(filePath, (err, data) => {
-                    if (err) {
-                        res.writeHead(404);
-                        res.end();
-                    } else {
-                        res.writeHead(200, { 'Content-Type': contentType });
-                        res.end(data);
-                    }
-                });
-            }
-        });
-
-        const wss = new WebSocket.Server({ server });
-        const clients = new Set(); // Для хранения подключённых клиентов
-
-        wss.on('connection', (ws) => {
-            clients.add(ws);
-            console.log('Новое подключение');
-
-            // Отправляем список подключённых пользователей
-            broadcastUsers();
-
-            ws.on('message', (message) => {
-                const data = JSON.parse(message);
-                if (data.type === 'message') {
-                    console.log('Получено сообщение: %s', data.message);
-                    // Отправляем сообщение всем подключённым клиентам
-                    broadcastMessage(data.message);
-                }
-            });
-
-            ws.on('close', () => {
-                clients.delete(ws);
-                console.log('Клиент отключился');
-                // Обновляем список пользователей
-                broadcastUsers();
-            });
-        });
-
-        // Функция для рассылки сообщения всем клиентам
-        function broadcastMessage(message) {
-            clients.forEach(client => {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(JSON.stringify({ type: 'message', message }));
-                }
-            });
-        }
-
-        // Функция для рассылки списка подключённых пользователей
-        function broadcastUsers() {
-            const userList = Array.from(clients).map((client, index) => `Пользователь ${index + 1}`);
-            clients.forEach(client => {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(JSON.stringify({ type: 'users', users: userList }));
-                }
-            });
-        }
-
-        // Запускаем сервер на порту 8080
-        server.listen(8080, () => {
-            console.log('Сервер запущен на http://localhost:8080');
-        });
-        */
+        // Отображаем сообщения при загрузке страницы
+        displayMessages();
     </script>
 </body>
 </html>
