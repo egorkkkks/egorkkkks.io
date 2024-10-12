@@ -3,23 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат</title>
+    <title>Чат на LocalStorage</title>
     <style>
         body { font-family: Arial, sans-serif; }
         #messages { margin-top: 20px; }
+        ul { list-style-type: none; padding: 0; }
     </style>
 </head>
 <body>
-    <h1>Простой чат с использованием LocalStorage</h1>
+    <h1>Чат на LocalStorage</h1>
     <input id="username" type="text" placeholder="Ваше имя" />
     <input id="message" type="text" placeholder="Введите сообщение" />
     <button id="send">Отправить</button>
     <ul id="messages"></ul>
 
     <script>
+        const messagesList = document.getElementById('messages');
+
         // Функция для отображения сообщений
         function displayMessages() {
-            const messagesList = document.getElementById('messages');
             messagesList.innerHTML = ''; // Очищаем список
             const messages = JSON.parse(localStorage.getItem('messages')) || [];
             messages.forEach(msg => {
@@ -29,25 +31,31 @@
             });
         }
 
+        // Обновляем список сообщений при загрузке
+        displayMessages();
+
+        // Отправка сообщения
         document.getElementById('send').onclick = () => {
             const username = document.getElementById('username').value || 'Гость';
             const messageInput = document.getElementById('message');
             const message = messageInput.value;
 
-            // Получаем существующие сообщения из LocalStorage
-            const messages = JSON.parse(localStorage.getItem('messages')) || [];
-            messages.push({ username, message });
+            if (message) {
+                // Получаем существующие сообщения из LocalStorage
+                const messages = JSON.parse(localStorage.getItem('messages')) || [];
+                messages.push({ username, message });
 
-            // Сохраняем обновленный список сообщений в LocalStorage
-            localStorage.setItem('messages', JSON.stringify(messages));
-            messageInput.value = '';
+                // Сохраняем обновленный список сообщений в LocalStorage
+                localStorage.setItem('messages', JSON.stringify(messages));
+                messageInput.value = '';
 
-            // Обновляем отображение сообщений
-            displayMessages();
+                // Обновляем отображение сообщений
+                displayMessages();
+            }
         };
 
-        // Отображаем сообщения при загрузке страницы
-        displayMessages();
+        // Обновление сообщений каждую секунду
+        setInterval(displayMessages, 1000);
     </script>
 </body>
 </html>
