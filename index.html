@@ -31,9 +31,6 @@
             });
         }
 
-        // Обновляем список сообщений при загрузке
-        displayMessages();
-
         // Отправка сообщения
         document.getElementById('send').onclick = () => {
             const username = document.getElementById('username').value || 'Гость';
@@ -56,6 +53,9 @@
 
         // Обновление сообщений каждую секунду
         setInterval(displayMessages, 1000);
+        
+        // Первоначальное отображение сообщений
+        displayMessages();
     </script>
 </body>
 </html>
